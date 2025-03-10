@@ -1,5 +1,7 @@
-from fastapi import FastAPI, status
+from fastapi import FastAPI
 from typing import Dict
+from app.health import router as health_router
+from app.dummy_endpoints import router as dummy_router
 
 app = FastAPI(
     title="FastAPI Hello World",
@@ -9,6 +11,7 @@ app = FastAPI(
     ## Features
     * Automatic interactive API documentation
     * Health check endpoint
+    * Dummy endpoints demonstrating all HTTP methods
     * Modern Python practices
     
     ## Getting Started
@@ -41,42 +44,9 @@ async def read_root() -> Dict[str, str]:
     """
     return {"message": "Hello World"}
 
-@app.get("/health",
-    response_model=Dict[str, str],
-    summary="Health check endpoint",
-    description="Checks if the application is running properly",
-    tags=["system"],
-    status_code=status.HTTP_200_OK,
-    responses={
-        200: {
-            "description": "Application is healthy",
-            "content": {
-                "application/json": {
-                    "example": {"status": "healthy"}
-                }
-            }
-        },
-        503: {
-            "description": "Application is unhealthy",
-            "content": {
-                "application/json": {
-                    "example": {"status": "unhealthy", "details": "Database connection failed"}
-                }
-            }
-        }
-    }
-)
-async def health_check() -> Dict[str, str]:
-    """
-    Performs a health check of the application.
-    
-    This endpoint can be used by monitoring tools to check if the application
-    is running properly.
-    
-    Returns:
-        Dict[str, str]: A dictionary containing the health status
-    """
-    return {"status": "healthy"}
+# Include routers
+app.include_router(health_router)
+app.include_router(dummy_router)
 
 if __name__ == "__main__":
     import uvicorn

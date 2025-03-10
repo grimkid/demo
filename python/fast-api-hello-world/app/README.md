@@ -28,6 +28,71 @@ curl http://localhost:8000/health
 {"status": "healthy"}
 ```
 
+### 3. Dummy Endpoints (`/dummy`)
+
+A collection of endpoints demonstrating different HTTP methods and request/response patterns.
+
+#### GET `/dummy`
+Demonstrates query parameters and headers.
+```bash
+# Basic request
+curl "http://localhost:8000/dummy?name=test&age=25"
+
+# With custom header
+curl "http://localhost:8000/dummy?name=test&age=25" \
+  -H "X-Custom-Header: test-header"
+```
+
+#### POST `/dummy`
+Creates a new resource with JSON body.
+```bash
+curl -X POST http://localhost:8000/dummy \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "test",
+    "value": 42,
+    "tags": ["tag1", "tag2"]
+  }'
+```
+
+#### PUT `/dummy/{item_id}`
+Updates an existing resource.
+```bash
+curl -X PUT http://localhost:8000/dummy/123 \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "test",
+    "value": 42,
+    "tags": ["tag1", "tag2"]
+  }'
+```
+
+#### PATCH `/dummy/{item_id}`
+Partially updates a resource.
+```bash
+curl -X PATCH http://localhost:8000/dummy/123 \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "updated-name"
+  }'
+```
+
+#### DELETE `/dummy/{item_id}`
+Deletes a resource.
+```bash
+# Basic delete
+curl -X DELETE http://localhost:8000/dummy/123
+
+# Force delete
+curl -X DELETE "http://localhost:8000/dummy/123?force=true"
+```
+
+#### OPTIONS `/dummy`
+Returns allowed methods.
+```bash
+curl -X OPTIONS http://localhost:8000/dummy
+```
+
 ## API Documentation (Swagger)
 
 The API documentation is available in three ways:
@@ -68,60 +133,84 @@ just health
 just docs
 ```
 
-## Response Codes
+## Request/Response Models
 
-### Health Check Endpoint
-- `200 OK`: Application is healthy
-  ```json
-  {"status": "healthy"}
-  ```
-- `503 Service Unavailable`: Application is unhealthy
-  ```json
-  {
-    "status": "unhealthy",
-    "details": "Database connection failed"
-  }
-  ```
+### DummyRequest Model
+```json
+{
+  "name": "string",
+  "value": "integer",
+  "tags": ["string"]
+}
+```
+
+### DummyResponse Model
+```json
+{
+  "message": "string",
+  "request_info": {
+    "headers": {},
+    "query_params": {},
+    "body": {}
+  },
+  "status": "success"
+}
+```
+
+## Request Logging
+
+All dummy endpoints log request information including:
+- HTTP Method
+- URL
+- Headers
+- Query Parameters
+- Request Body (if present)
+
+You can see these logs in the server console.
 
 ## Testing with Different Tools
 
 ### 1. Using curl
+Examples provided above for each endpoint.
+
+### 2. Using httpie
 ```bash
-# Root endpoint
-curl http://localhost:8000/
+# GET request
+http :8000/dummy name==test age==25 X-Custom-Header:test-header
 
-# Health check
-curl http://localhost:8000/health
-```
-
-### 2. Using httpie (more user-friendly alternative)
-```bash
-# Root endpoint
-http :8000/
-
-# Health check
-http :8000/health
+# POST request
+http POST :8000/dummy name=test value:=42 tags:='["tag1", "tag2"]'
 ```
 
 ### 3. Using Python requests
 ```python
 import requests
 
-# Root endpoint
-response = requests.get("http://localhost:8000/")
-print(response.json())
+# GET request
+response = requests.get(
+    "http://localhost:8000/dummy",
+    params={"name": "test", "age": 25},
+    headers={"X-Custom-Header": "test-header"}
+)
 
-# Health check
-response = requests.get("http://localhost:8000/health")
-print(response.json())
+# POST request
+response = requests.post(
+    "http://localhost:8000/dummy",
+    json={
+        "name": "test",
+        "value": 42,
+        "tags": ["tag1", "tag2"]
+    }
+)
 ```
 
 ### 4. Using Swagger UI
 1. Open `http://localhost:8000/docs` in your browser
 2. Find the endpoint you want to test
 3. Click "Try it out"
-4. Click "Execute"
-5. View the response
+4. Fill in the parameters/body
+5. Click "Execute"
+6. View the response
 
 ## API Metadata
 - Version: 0.1.0
